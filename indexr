@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Letter For You 💌</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0f7fa; /* Sky Blue Background */
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        /* --- Game Screen Styles --- */
+        #game-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            z-index: 10;
+            transition: all 0.8s ease; /* For the fade-out animation */
+        }
+
+        #game-screen h2 {
+            color: #0288d1;
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-family: 'Caveat', cursive;
+            font-size: 32px;
+        }
+
+        #game-screen p {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 15px;
+            max-width: 280px;
+        }
+
+        canvas {
+            background-color: #f0fbfd;
+            border: 2px solid #81d4fa;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        .score-board {
+            font-weight: 600;
+            color: #ff3366;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+        /* Mobile Controls */
+        .controls {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: 50px 50px 50px;
+            grid-template-rows: 50px 50px;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .controls button {
+            background-color: #4fc3f7;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #0288d1;
+            transition: all 0.1s;
+        }
+
+        .controls button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #0288d1;
+        }
+
+        #btn-up { grid-column: 2; grid-row: 1; }
+        #btn-left { grid-column: 1; grid-row: 2; }
+        #btn-down { grid-column: 2; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
+
+        /* --- Envelope & Letter Styles --- */
+        #letter-screen {
+            display: none; /* Hidden until game is won */
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.8s ease; /* For the fade-in animation */
+        }
+
+        .container {
+            position: relative;
+            margin-top: 50px;
+        }
+
+        .envelope {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            background-color: #81d4fa; 
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 100px solid #4fc3f7;
+            z-index: 4;
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out;
+        }
+
+        .envelope.open::before {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid #b3e5fc;
+            border-right: 150px solid transparent;
+            border-bottom: 100px solid transparent;
+            border-top: 100px solid transparent;
+            z-index: 3;
+        }
+
+        .envelope-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-right: 150px solid #b3e5fc;
+            border-left: 150px solid transparent;
+            border-bottom: 100px solid transparent;
+            border-top: 100px solid transparent;
+            z-index: 3;
+        }
+
+        .envelope-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-bottom: 100px solid #81d4fa;
+            z-index: 3;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .heart {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background-color: #ff3366; 
+            z-index: 5;
+            animation: beat 1.5s infinite;
+            transition: opacity 0.3s;
+        }
+
+        .heart::before, .heart::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #ff3366;
+            border-radius: 50%;
+        }
+
+        .heart::before {
+            top: -15px;
+            left: 0;
+        }
+
+        .heart::after {
+            top: 0;
+            left: -15px;
+        }
+
+        .envelope.open .heart {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes beat {
+            0%, 100% { transform: translateX(-50%) scale(1) rotate(-45deg); }
+            50% { transform: translateX(-50%) scale(1.1) rotate(-45deg); }
+        }
+
+        .letter {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 260px;
+            height: 350px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.8s ease-in-out;
+            z-index: 2;
+        }
+
+        .envelope.open + .letter {
+            transform: translateX(-50%) translateY(-150px);
+            z-index: 5;
+        }
+
+        h1 {
+            font-family: 'Caveat', cursive;
+            color: #0288d1;
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        .letter p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            text-align: justify;
+            margin: 0;
+        }
+
+        .signature {
+            font-family: 'Caveat', cursive;
+            font-size: 24px;
+            text-align: right;
+            margin-top: 20px;
+            color: #0288d1;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: -40px;
+            width: 100%;
+            text-align: center;
+            color: #0288d1;
+            font-size: 14px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* --- Floating Hearts Animation --- */
+        .floating-heart {
+            position: absolute;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-20vh) scale(1.5) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen">
+        <h2>Unlock Your Letter! ☁️</h2>
+        <p>Collect 5 hearts with the snake to open your special message.</p>
+        
+        <canvas id="snake-board" width="280" height="280"></canvas>
+        <div class="score-board">Hearts Collected: <span id="score">0</span> / 5</div>
+        
+        <!-- Mobile Controls -->
+        <div class="controls">
+            <button id="btn-up">⬆️</button>
+            <button id="btn-left">⬅️</button>
+            <button id="btn-down">⬇️</button>
+            <button id="btn-right">➡️</button>
+        </div>
+    </div>
+
+    <!-- LETTER SCREEN -->
+    <div id="letter-screen">
+        <div class="container">
+            <div class="envelope" id="envelope">
+                <div class="envelope-right"></div>
+                <div class="envelope-bottom"></div>
+                <div class="heart"></div>
+            </div>
+            <div class="letter">
+                <h1>Dear Gea Carine,</h1>
+                <p>
+                    Type your sweet, customized message to her right here! Tell her how much she means to you, share an inside joke, or just let her know she makes your day better. 
+                    <br><br>
+                    You can make this text as long or as short as you want.
+                </p>
+                <div class="signature">Love, Yvan</div>
+            </div>
+        </div>
+        <div class="hint">Click the envelope to open! 💌</div>
+    </div>
+
+    <script>
+        // --- SNAKE GAME LOGIC ---
+        const canvas = document.getElementById("snake-board");
+        const ctx = canvas.getContext("2d");
+        
+        const gameScreen = document.getElementById("game-screen");
+        const letterScreen = document.getElementById("letter-screen");
+        const scoreElement = document.getElementById("score");
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+        const targetScore = 5; 
+
+        let snake = [{ x: 10, y: 10 }];
+        let dx = 0;
+        let dy = 0;
+        let foodX = 5;
+        let foodY = 5;
+        let score = 0;
+        let gameActive = true;
+
+        function drawGame() {
+            if (!gameActive) return;
+
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            
+            if (head.x < 0) head.x = tileCount - 1;
+            if (head.x >= tileCount) head.x = 0;
+            if (head.y < 0) head.y = tileCount - 1;
+            if (head.y >= tileCount) head.y = 0;
+
+            for (let i = 0; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y && snake.length > 1) {
+                    resetGame();
+                    return;
+                }
+            }
+
+            snake.unshift(head); 
+
+            if (head.x === foodX && head.y === foodY) {
+                score++;
+                scoreElement.innerText = score;
+                placeFood();
+                
+                if (score >= targetScore) {
+                    winGame();
+                    return;
+                }
+            } else {
+                if (dx !== 0 || dy !== 0) {
+                    snake.pop(); 
+                }
+            }
+
+            ctx.fillStyle = "#f0fbfd";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = "16px Arial";
+            ctx.fillText("❤️", foodX * gridSize + 2, foodY * gridSize + 15);
+
+            snake.forEach((part, index) => {
+                if (index === 0) ctx.fillStyle = "#0288d1"; 
+                else ctx.fillStyle = "#4fc3f7";
+                ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 2, gridSize - 2);
+            });
+
+            setTimeout(drawGame, 150); 
+        }
+
+        function placeFood() {
+            foodX = Math.floor(Math.random() * tileCount);
+            foodY = Math.floor(Math.random() * tileCount);
+            snake.forEach(part => {
+                if (part.x === foodX && part.y === foodY) placeFood();
+            });
+        }
+
+        function resetGame() {
+            snake = [{ x: 10, y: 10 }];
+            dx = 0;
+            dy = 0;
+            score = 0;
+            scoreElement.innerText = score;
+            placeFood();
+            drawGame();
+        }
+
+        function triggerConfetti() {
+            for (let i = 0; i < 20; i++) {
+                let heart = document.createElement('div');
+                heart.innerHTML = ['💖', '✨', '💕'][Math.floor(Math.random() * 3)];
+                heart.className = 'floating-heart';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                heart.style.animation = `floatUp ${Math.random() * 2 + 2}s ease-in forwards`;
+                document.body.appendChild(heart);
+                
+                setTimeout(() => { heart.remove(); }, 4000);
+            }
+        }
+
+        function winGame() {
+            gameActive = false;
+            
+            // 1. Fade out the game screen
+            gameScreen.style.opacity = '0';
+            gameScreen.style.transform = 'scale(0.8)';
+            
+            // 2. Launch the heart confetti
+            triggerConfetti();
+
+            // 3. Wait for the fade out to finish, then swap displays and fade in the letter
+            setTimeout(() => {
+                gameScreen.style.display = 'none';
+                letterScreen.style.display = 'flex';
+                
+                // Small delay to allow the browser to register the display change before animating opacity
+                setTimeout(() => {
+                    letterScreen.style.opacity = '1';
+                    letterScreen.style.transform = 'scale(1)';
+                }, 50);
+
+            }, 800);
+        }
+
+        // --- CONTROLS ---
+        function changeDirection(newDx, newDy) {
+            if (dx === 0 && dy === 0) { dx = newDx; dy = newDy; return; }
+            if (dx === -newDx && dx !== 0) return;
+            if (dy === -newDy && dy !== 0) return;
+            dx = newDx;
+            dy = newDy;
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowUp" || e.key === "w") changeDirection(0, -1);
+            if (e.key === "ArrowDown" || e.key === "s") changeDirection(0, 1);
+            if (e.key === "ArrowLeft" || e.key === "a") changeDirection(-1, 0);
+            if (e.key === "ArrowRight" || e.key === "d") changeDirection(1, 0);
+        });
+
+        document.getElementById("btn-up").addEventListener("click", () => changeDirection(0, -1));
+        document.getElementById("btn-down").addEventListener("click", () => changeDirection(0, 1));
+        document.getElementById("btn-left").addEventListener("click", () => changeDirection(-1, 0));
+        document.getElementById("btn-right").addEventListener("click", () => changeDirection(1, 0));
+
+        placeFood();
+        drawGame();
+
+        // --- ENVELOPE LOGIC ---
+        const envelope = document.getElementById('envelope');
+        envelope.addEventListener('click', () => {
+            envelope.classList.toggle('open');
+        });
+    </script>
+
+</body>
+</html>
