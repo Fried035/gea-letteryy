@@ -14,7 +14,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #e0f7fa; /* Sky Blue Background */
+            background-color: #e0f7fa;
             font-family: 'Poppins', sans-serif;
             overflow: hidden;
             flex-direction: column;
@@ -31,7 +31,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
             text-align: center;
             z-index: 10;
-            transition: all 0.8s ease; /* For the fade-out animation */
+            transition: all 0.8s ease; 
         }
 
         #game-screen h2 {
@@ -96,13 +96,13 @@
 
         /* --- Envelope & Letter Styles --- */
         #letter-screen {
-            display: none; /* Hidden until game is won */
+            display: none; 
             flex-direction: column;
             align-items: center;
             position: relative;
             opacity: 0;
             transform: scale(0.8);
-            transition: all 0.8s ease; /* For the fade-in animation */
+            transition: all 0.8s ease; 
         }
 
         .container {
@@ -122,6 +122,7 @@
             z-index: 2;
         }
 
+        /* TOP FLAP */
         .envelope::before {
             content: '';
             position: absolute;
@@ -134,14 +135,16 @@
             border-top: 100px solid #4fc3f7;
             z-index: 4;
             transform-origin: top;
-            transition: transform 0.6s ease-in-out;
+            transition: transform 0.6s ease-in-out, z-index 0.6s;
+            pointer-events: none;
         }
 
         .envelope.open::before {
             transform: rotateX(180deg);
-            z-index: 1;
+            z-index: 1; /* Puts the flap behind the letter when opened */
         }
 
+        /* LEFT FLAP */
         .envelope::after {
             content: '';
             position: absolute;
@@ -154,8 +157,10 @@
             border-bottom: 100px solid transparent;
             border-top: 100px solid transparent;
             z-index: 3;
+            pointer-events: none; /* Lets clicks pass through to the letter */
         }
 
+        /* RIGHT FLAP */
         .envelope-right {
             position: absolute;
             top: 0;
@@ -167,8 +172,10 @@
             border-bottom: 100px solid transparent;
             border-top: 100px solid transparent;
             z-index: 3;
+            pointer-events: none;
         }
 
+        /* BOTTOM FLAP */
         .envelope-bottom {
             position: absolute;
             bottom: 0;
@@ -181,6 +188,7 @@
             z-index: 3;
             border-bottom-left-radius: 10px;
             border-bottom-right-radius: 10px;
+            pointer-events: none;
         }
 
         .heart {
@@ -225,26 +233,32 @@
             50% { transform: translateX(-50%) scale(1.1) rotate(-45deg); }
         }
 
+        /* THE LETTER - Now perfectly sandwiched! */
         .letter {
             position: absolute;
-            bottom: 0;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             width: 260px;
-            height: 350px;
+            height: 180px; /* Starts small inside the closed envelope */
             background-color: #fff;
             border-radius: 10px;
             padding: 30px 20px;
             box-sizing: border-box;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.8s ease-in-out;
-            z-index: 2;
+            transition: all 0.8s ease-in-out;
+            z-index: 2; /* Sits behind the front flaps (which are z-index 3) */
+            overflow-y: auto;
         }
 
-        .envelope.open + .letter {
-            transform: translateX(-50%) translateY(-150px);
-            z-index: 5;
+        .envelope.open .letter {
+            transform: translateX(-50%) translateY(-120px); /* Slides upwards */
+            height: 350px; /* Unfolds to full height! */
         }
+
+        /* Custom Scrollbar for the letter just in case it gets too long */
+        .letter::-webkit-scrollbar { width: 6px; }
+        .letter::-webkit-scrollbar-thumb { background: #b3e5fc; border-radius: 10px; }
 
         h1 {
             font-family: 'Caveat', cursive;
@@ -320,18 +334,21 @@
     <div id="letter-screen">
         <div class="container">
             <div class="envelope" id="envelope">
+                
+                <!-- Notice the letter is now safely INSIDE the envelope div -->
+                <div class="letter">
+                    <h1>Dear Gea Carine,</h1>
+                    <p>
+                        Type your sweet, customized message to her right here! Tell her how much she means to you, share an inside joke, or just let her know she makes your day better. 
+                        <br><br>
+                        You can make this text as long or as short as you want. 
+                    </p>
+                    <div class="signature">Love, Yvan</div>
+                </div>
+
                 <div class="envelope-right"></div>
                 <div class="envelope-bottom"></div>
                 <div class="heart"></div>
-            </div>
-            <div class="letter">
-                <h1>Dear Gea Carine,</h1>
-                <p>
-                    Type your sweet, customized message to her right here! Tell her how much she means to you, share an inside joke, or just let her know she makes your day better. 
-                    <br><br>
-                    You can make this text as long or as short as you want.
-                </p>
-                <div class="signature">Love, Yvan</div>
             </div>
         </div>
         <div class="hint">Click the envelope to open! 💌</div>
@@ -442,19 +459,15 @@
         function winGame() {
             gameActive = false;
             
-            // 1. Fade out the game screen
             gameScreen.style.opacity = '0';
             gameScreen.style.transform = 'scale(0.8)';
             
-            // 2. Launch the heart confetti
             triggerConfetti();
 
-            // 3. Wait for the fade out to finish, then swap displays and fade in the letter
             setTimeout(() => {
                 gameScreen.style.display = 'none';
                 letterScreen.style.display = 'flex';
                 
-                // Small delay to allow the browser to register the display change before animating opacity
                 setTimeout(() => {
                     letterScreen.style.opacity = '1';
                     letterScreen.style.transform = 'scale(1)';
@@ -489,7 +502,12 @@
 
         // --- ENVELOPE LOGIC ---
         const envelope = document.getElementById('envelope');
-        envelope.addEventListener('click', () => {
+        
+        envelope.addEventListener('click', (e) => {
+            // This stops the envelope from closing if she clicks specifically on the letter text to scroll or highlight it
+            if (envelope.classList.contains('open') && e.target.closest('.letter')) {
+                return;
+            }
             envelope.classList.toggle('open');
         });
     </script>
