@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Letter For You 💌</title>
+    <title>A Letter For My Dragoncakess</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@300;400;600&display=swap');
 
@@ -20,8 +20,8 @@
             flex-direction: column;
         }
 
-        /* --- Game Screen Styles --- */
-        #game-screen {
+        /* --- Shared Screen Styles --- */
+        .screen-card {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -34,7 +34,7 @@
             transition: all 0.8s ease; 
         }
 
-        #game-screen h2 {
+        .screen-card h2 {
             color: #0288d1;
             margin-top: 0;
             margin-bottom: 5px;
@@ -42,13 +42,14 @@
             font-size: 32px;
         }
 
-        #game-screen p {
+        .screen-card p {
             color: #555;
             font-size: 14px;
             margin-bottom: 15px;
             max-width: 280px;
         }
 
+        /* --- Game Screen Specifics --- */
         canvas {
             background-color: #f0fbfd;
             border: 2px solid #81d4fa;
@@ -63,7 +64,6 @@
             font-size: 18px;
         }
 
-        /* Mobile Controls */
         .controls {
             margin-top: 15px;
             display: grid;
@@ -94,6 +94,60 @@
         #btn-down { grid-column: 2; grid-row: 2; }
         #btn-right { grid-column: 3; grid-row: 2; }
 
+        /* --- Passcode Screen Specifics --- */
+        #passcode-screen {
+            display: none; 
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        input[type="password"] {
+            padding: 12px 15px;
+            border: 2px solid #81d4fa;
+            border-radius: 8px;
+            font-size: 18px;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            width: 150px;
+            text-align: center;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+            letter-spacing: 5px;
+        }
+
+        input[type="password"]:focus {
+            border-color: #0288d1;
+        }
+
+        .action-btn {
+            background-color: #4fc3f7;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .action-btn:hover {
+            background-color: #0288d1;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        #error-message {
+            color: #ff3366;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+            font-weight: 600;
+        }
+
         /* --- Envelope & Letter Styles --- */
         #letter-screen {
             display: none; 
@@ -122,7 +176,6 @@
             z-index: 2;
         }
 
-        /* TOP FLAP */
         .envelope::before {
             content: '';
             position: absolute;
@@ -141,10 +194,9 @@
 
         .envelope.open::before {
             transform: rotateX(180deg);
-            z-index: 1; /* Puts the flap behind the letter when opened */
+            z-index: 1; 
         }
 
-        /* LEFT FLAP */
         .envelope::after {
             content: '';
             position: absolute;
@@ -157,10 +209,9 @@
             border-bottom: 100px solid transparent;
             border-top: 100px solid transparent;
             z-index: 3;
-            pointer-events: none; /* Lets clicks pass through to the letter */
+            pointer-events: none; 
         }
 
-        /* RIGHT FLAP */
         .envelope-right {
             position: absolute;
             top: 0;
@@ -175,7 +226,6 @@
             pointer-events: none;
         }
 
-        /* BOTTOM FLAP */
         .envelope-bottom {
             position: absolute;
             bottom: 0;
@@ -233,30 +283,28 @@
             50% { transform: translateX(-50%) scale(1.1) rotate(-45deg); }
         }
 
-        /* THE LETTER - Now perfectly sandwiched! */
         .letter {
             position: absolute;
             bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 260px;
-            height: 180px; /* Starts small inside the closed envelope */
+            width: 270px; /* Slightly wider for the text */
+            height: 180px; 
             background-color: #fff;
             border-radius: 10px;
             padding: 30px 20px;
             box-sizing: border-box;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             transition: all 0.8s ease-in-out;
-            z-index: 2; /* Sits behind the front flaps (which are z-index 3) */
+            z-index: 2; 
             overflow-y: auto;
         }
 
         .envelope.open .letter {
-            transform: translateX(-50%) translateY(-120px); /* Slides upwards */
-            height: 350px; /* Unfolds to full height! */
+            transform: translateX(-50%) translateY(-140px); 
+            height: 420px; /* Taller to fit your sweet message beautifully */
         }
 
-        /* Custom Scrollbar for the letter just in case it gets too long */
         .letter::-webkit-scrollbar { width: 6px; }
         .letter::-webkit-scrollbar-thumb { background: #b3e5fc; border-radius: 10px; }
 
@@ -268,11 +316,12 @@
         }
 
         .letter p {
-            font-size: 14px;
+            font-size: 13.5px;
             line-height: 1.6;
             color: #555;
             text-align: justify;
             margin: 0;
+            white-space: pre-wrap; 
         }
 
         .signature {
@@ -313,15 +362,14 @@
 </head>
 <body>
 
-    <!-- GAME SCREEN -->
-    <div id="game-screen">
-        <h2>Unlock Your Letter! ☁️</h2>
-        <p>Collect 5 hearts with the snake to open your special message.</p>
+    <!-- 1. GAME SCREEN -->
+    <div id="game-screen" class="screen-card">
+        <h2>Butt before mo ma open play this munaa</h2>
+        <p>Collect 5 hearts with the snake to proceed.</p>
         
         <canvas id="snake-board" width="280" height="280"></canvas>
         <div class="score-board">Hearts Collected: <span id="score">0</span> / 5</div>
         
-        <!-- Mobile Controls -->
         <div class="controls">
             <button id="btn-up">⬆️</button>
             <button id="btn-left">⬅️</button>
@@ -330,20 +378,28 @@
         </div>
     </div>
 
-    <!-- LETTER SCREEN -->
+    <!-- 2. PASSCODE SCREEN -->
+    <div id="passcode-screen" class="screen-card">
+        <h2>Oh last na tooo</h2>
+        <p>Hint: the number you shouldn't forget (only 2 numbers)</p>
+        
+        <input type="password" id="passcode-input" placeholder="**" maxlength="2">
+        <button id="submit-btn" class="action-btn">Open Envelope</button>
+        
+        <div id="error-message">Oops! That's not it, try again! 💖</div>
+    </div>
+
+    <!-- 3. LETTER SCREEN -->
     <div id="letter-screen">
         <div class="container">
             <div class="envelope" id="envelope">
                 
-                <!-- Notice the letter is now safely INSIDE the envelope div -->
                 <div class="letter">
-                    <h1>Dear Gea Carine,</h1>
-                    <p>
-                        Type your sweet, customized message to her right here! Tell her how much she means to you, share an inside joke, or just let her know she makes your day better. 
-                        <br><br>
-                        You can make this text as long or as short as you want. 
-                    </p>
-                    <div class="signature">Love, Yvan</div>
+                    <h1>Helloo babbyyyy 😘</h1>
+                    <p>Happyy monthsaryyy poooo, we've been together for how long na nga ulettt? 1 year palang baaa? Ay wait sa may lalaki ko pala yunn HAHAHAHAHA. Happyyy 2 years and 5 months babbyy!! Pag mali for sure lagot ako sayoo. 
+
+Babbyyy thank youu poo for being with meee even tho hindi kita nadadala on many places yog want to goo. I cant even bring you on a date in the day ng monthsaryy natinn :(( butt still you always choose to stay withh even if its hard. I lovee you so much babbyyy lagii and i will always alwayss do my best to be your best babbyyy. I promise on a pinky promise kahit sa hinliliit ko pa sa paa. After this college thingy and we have a stable job naa, I will bring you to a lot of placess na we've missed throughout our college life. Remember thattttft, just please bear with me po munaa for the meantimeee. Let's understand more eachother, communicate, always resort to choosing each other and most imporantlyy lovee more each otherr. I lovee youu babbyyyyycakess</p>
+                    <div class="signature">Cutterpilloww</div>
                 </div>
 
                 <div class="envelope-right"></div>
@@ -355,12 +411,14 @@
     </div>
 
     <script>
+        // --- SCREEN ELEMENTS ---
+        const gameScreen = document.getElementById("game-screen");
+        const passcodeScreen = document.getElementById("passcode-screen");
+        const letterScreen = document.getElementById("letter-screen");
+
         // --- SNAKE GAME LOGIC ---
         const canvas = document.getElementById("snake-board");
         const ctx = canvas.getContext("2d");
-        
-        const gameScreen = document.getElementById("game-screen");
-        const letterScreen = document.getElementById("letter-screen");
         const scoreElement = document.getElementById("score");
 
         const gridSize = 20;
@@ -442,41 +500,25 @@
             drawGame();
         }
 
-        function triggerConfetti() {
-            for (let i = 0; i < 20; i++) {
-                let heart = document.createElement('div');
-                heart.innerHTML = ['💖', '✨', '💕'][Math.floor(Math.random() * 3)];
-                heart.className = 'floating-heart';
-                heart.style.left = Math.random() * 100 + 'vw';
-                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
-                heart.style.animation = `floatUp ${Math.random() * 2 + 2}s ease-in forwards`;
-                document.body.appendChild(heart);
-                
-                setTimeout(() => { heart.remove(); }, 4000);
-            }
-        }
-
         function winGame() {
             gameActive = false;
             
             gameScreen.style.opacity = '0';
             gameScreen.style.transform = 'scale(0.8)';
             
-            triggerConfetti();
-
             setTimeout(() => {
                 gameScreen.style.display = 'none';
-                letterScreen.style.display = 'flex';
+                passcodeScreen.style.display = 'flex';
                 
                 setTimeout(() => {
-                    letterScreen.style.opacity = '1';
-                    letterScreen.style.transform = 'scale(1)';
+                    passcodeScreen.style.opacity = '1';
+                    passcodeScreen.style.transform = 'scale(1)';
                 }, 50);
 
             }, 800);
         }
 
-        // --- CONTROLS ---
+        // GAME CONTROLS
         function changeDirection(newDx, newDy) {
             if (dx === 0 && dy === 0) { dx = newDx; dy = newDy; return; }
             if (dx === -newDx && dx !== 0) return;
@@ -500,11 +542,64 @@
         placeFood();
         drawGame();
 
+
+        // --- PASSCODE LOGIC ---
+        const SECRET_PASSCODE = "26"; 
+
+        const submitBtn = document.getElementById('submit-btn');
+        const passwordInput = document.getElementById('passcode-input');
+        const errorMessage = document.getElementById('error-message');
+
+        function triggerConfetti() {
+            for (let i = 0; i < 20; i++) {
+                let heart = document.createElement('div');
+                heart.innerHTML = ['💖', '✨', '💕'][Math.floor(Math.random() * 3)];
+                heart.className = 'floating-heart';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                heart.style.animation = `floatUp ${Math.random() * 2 + 2}s ease-in forwards`;
+                document.body.appendChild(heart);
+                
+                setTimeout(() => { heart.remove(); }, 4000);
+            }
+        }
+
+        function checkPasscode() {
+            if (passwordInput.value === SECRET_PASSCODE) {
+                // Fade out passcode screen
+                passcodeScreen.style.opacity = '0';
+                passcodeScreen.style.transform = 'scale(0.8)';
+                
+                triggerConfetti();
+
+                // Swap to letter screen
+                setTimeout(() => {
+                    passcodeScreen.style.display = 'none';
+                    letterScreen.style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        letterScreen.style.opacity = '1';
+                        letterScreen.style.transform = 'scale(1)';
+                    }, 50);
+                }, 800);
+            } else {
+                errorMessage.style.display = 'block';
+                passwordInput.value = ''; 
+            }
+        }
+
+        submitBtn.addEventListener('click', checkPasscode);
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPasscode();
+            }
+        });
+
+
         // --- ENVELOPE LOGIC ---
         const envelope = document.getElementById('envelope');
         
         envelope.addEventListener('click', (e) => {
-            // This stops the envelope from closing if she clicks specifically on the letter text to scroll or highlight it
             if (envelope.classList.contains('open') && e.target.closest('.letter')) {
                 return;
             }
